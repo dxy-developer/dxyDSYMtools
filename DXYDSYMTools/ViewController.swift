@@ -11,7 +11,7 @@ import Cocoa
 
 extension String {
     var length: Int {
-        return count(self)
+        return self.characters.count
     }// Swift 1.2
 }
 
@@ -72,7 +72,7 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
     }
     
     func tableView(tableView: NSTableView, viewForTableColumn tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        var cellView: NSTableCellView = tableView.makeViewWithIdentifier(tableColumn!.identifier, owner: self) as! NSTableCellView
+        let cellView: NSTableCellView = tableView.makeViewWithIdentifier(tableColumn!.identifier, owner: self) as! NSTableCellView
         
         var frame = cellView.frame
         frame.size.width = 200
@@ -160,7 +160,7 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
         }else{
             cachedSlideAddr = slideaddrField.stringValue
             slideaddrField.stringValue = ""
-            println(cachedSlideAddr)
+            print(cachedSlideAddr)
         }
         
         
@@ -171,9 +171,16 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
     
     // MARK: - Private
     func matchString(string:String,pattern:String)->String?{
-        var regex = NSRegularExpression(pattern: pattern, options: nil, error: nil)
-        let result = regex?.firstMatchInString(string, options: nil, range: NSMakeRange(0, string.length))
-        return (string as NSString).substringWithRange(result!.range)
+        do{
+            let regex = try NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions.AllowCommentsAndWhitespace)
+            let result = regex.firstMatchInString(string, options: NSMatchingOptions.Anchored, range: NSMakeRange(0, string.length))
+            
+            return (string as NSString).substringWithRange(result!.range)
+        }catch{
+            
+        }
+        
+        return nil
     }
     
     func findType(info:[String])->String{
@@ -189,10 +196,10 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
     
     func getInfoFormDSYMFile(filePath:String){
         archDict.removeAllObjects()
-        var path = (filePath as NSString).substringFromIndex("file:\\\\".length)
+        let path = (filePath as NSString).substringFromIndex("file:\\\\".length)
         let commandOutput = executeCommand("/usr/bin/dwarfdump", args: ["--uuid",path]) as String
-        println("Command output: \(commandOutput)")
-        var array = commandOutput.componentsSeparatedByString("\n")
+        print("Command output: \(commandOutput)")
+        let array = commandOutput.componentsSeparatedByString("\n")
         
         for aString in array{
             if aString.length>0{
@@ -232,7 +239,7 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
         if errorAddrList.count == 0{
             var alert = NSAlert();
             alert.informativeText = "警告"
-            alert.messageText! = "错误地址列表不能为空！"
+            alert.messageText = "错误地址列表不能为空！"
             alert.runModal()
             return false
         }
@@ -240,7 +247,7 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
         if slideaddrField.stringValue.length == 0{
             var alert = NSAlert();
             alert.informativeText = "警告"
-            alert.messageText! = "Slide Address 不能为空！"
+            alert.messageText = "Slide Address 不能为空！"
             alert.runModal()
             return false
         }
@@ -268,8 +275,8 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
     
     func openfiledialog (windowTitle: String,filetypelist: String,completion:(path:String)->Void)
     {
-        var openPanel: NSOpenPanel = NSOpenPanel()
-        var fileTypeArray: [String] = filetypelist.componentsSeparatedByString(",")
+        let openPanel: NSOpenPanel = NSOpenPanel()
+        let fileTypeArray: [String] = filetypelist.componentsSeparatedByString(",")
         
         openPanel.prompt = "Open"
         openPanel.showsResizeIndicator = true
@@ -282,9 +289,9 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
         
         openPanel.beginSheetModalForWindow(NSApplication.sharedApplication().keyWindow!, completionHandler: { (result) -> Void in
             if result == NSModalResponseOK{
-                var selection = openPanel.URL
+                let selection = openPanel.URL
                 let  path = selection!.absoluteString
-                completion(path: path!)
+                completion(path: path)
             }
         })
     }
@@ -294,8 +301,8 @@ class ViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate
 extension NSTextField{
     
     public override func performKeyEquivalent(event: NSEvent) -> Bool {
-        var commandKey = NSEventModifierFlags.CommandKeyMask.rawValue
-        var commandShiftKey = NSEventModifierFlags.CommandKeyMask.rawValue | NSEventModifierFlags.ShiftKeyMask.rawValue
+        let commandKey = NSEventModifierFlags.CommandKeyMask.rawValue
+        let commandShiftKey = NSEventModifierFlags.CommandKeyMask.rawValue | NSEventModifierFlags.ShiftKeyMask.rawValue
         if event.type == NSEventType.KeyDown {
             if (event.modifierFlags.rawValue & NSEventModifierFlags.DeviceIndependentModifierFlagsMask.rawValue) == commandKey {
                 switch event.charactersIgnoringModifiers! {
